@@ -9,6 +9,9 @@ lcimport_LDFLAGS = -X 'main.version=$(GL_VERSION)'
 GOCHAIN_ICON_IMAGE = goloop/gochain-icon:$(GL_TAG)
 GOCHAIN_ICON_DOCKER_DIR = $(BUILD_ROOT)/build/gochain-icon
 
+GOLOOP_ICON_IMAGE = goloop/goloop-icon:$(GL_TAG)
+GOLOOP_ICON_DOCKER_DIR = $(BUILD_ROOT)/build/goloop-icon
+
 ICONEE_DIST_DIR = $(BUILD_ROOT)/build/iconee/dist
 
 $(ICONEE_DIST_DIR):
@@ -38,3 +41,11 @@ gochain-icon-image: pyrun-iconexec gorun-gochain-linux javarun-javaexec
 	IMAGE_PY_DEPS=$(PYDEPS_IMAGE) \
 	GOBUILD_TAGS="$(GOBUILD_TAGS)" \
 	$(BUILD_ROOT)/docker/gochain-icon/update.sh $(GOCHAIN_ICON_IMAGE) $(BUILD_ROOT) $(GOCHAIN_ICON_DOCKER_DIR)
+
+goloop-icon-image: pyrun-iconexec gorun-goloop-linux javarun-javaexec
+	@ \
+	rm -rf $(GOLOOP_ICON_DOCKER_DIR)
+	BIN_DIR=$(abspath $(LINUX_BIN_DIR)) \
+	IMAGE_PY_DEPS=$(PYDEPS_IMAGE) \
+	GOBUILD_TAGS="$(GOBUILD_TAGS)" \
+	$(BUILD_ROOT)/docker/goloop-icon/update.sh $(GOLOOP_ICON_IMAGE) $(BUILD_ROOT) $(GOLOOP_ICON_DOCKER_DIR)
