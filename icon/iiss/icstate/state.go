@@ -43,6 +43,7 @@ type State struct {
 	readonly bool
 
 	accountDB *containerdb.DictDB
+	termDB    *containerdb.VarDB
 
 	activePRepCache     *ActivePRepCache
 	nodeOwnerCache      *NodeOwnerCache
@@ -50,13 +51,11 @@ type State struct {
 	prepStatusCache     *PRepStatusCache
 	unstakingTimerCache *TimerCache
 	unbondingTimerCache *TimerCache
-	termCache           *termCache
 
 	store *icobject.ObjectStoreState
 }
 
 func (s *State) Reset(ss *Snapshot) error {
-	var err error
 	s.store.Reset(ss.store.ImmutableForObject)
 	s.activePRepCache.Reset()
 	s.nodeOwnerCache.Reset()
@@ -64,9 +63,6 @@ func (s *State) Reset(ss *Snapshot) error {
 	s.prepStatusCache.Reset()
 	s.unstakingTimerCache.Reset()
 	s.unbondingTimerCache.Reset()
-	if err = s.termCache.Reset(); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -77,7 +73,7 @@ func (s *State) Flush() error {
 	s.prepStatusCache.Flush()
 	s.unstakingTimerCache.Flush()
 	s.unbondingTimerCache.Flush()
-	return s.termCache.Flush()
+	return nil
 }
 
 func (s *State) GetSnapshot() *Snapshot {
@@ -164,13 +160,13 @@ func NewStateFromTrie(t trie.MutableForObject, readonly bool) *State {
 	s := &State{
 		readonly:            readonly,
 		accountDB:           containerdb.NewDictDB(store, 1, AccountDictPrefix),
+		termDB:              containerdb.NewVarDB(store, termVarPrefix),
 		activePRepCache:     newActivePRepCache(store),
 		nodeOwnerCache:      newNodeOwnerCache(store),
 		prepBaseCache:       newPRepBaseCache(store),
 		prepStatusCache:     newPRepStatusCache(store),
 		unstakingTimerCache: newTimerCache(store, unstakingTimerDictPrefix),
 		unbondingTimerCache: newTimerCache(store, unbondingTimerDictPrefix),
-		termCache:           newTermCache(store),
 		store:               store,
 	}
 
@@ -206,11 +202,17 @@ func (s *State) GetIssue() (*Issue, error) {
 }
 
 func (s *State) GetTerm() *Term {
-	return s.termCache.Get()
+	return ToTerm(s.termDB.Object())
 }
 
 func (s *State) SetTerm(term *Term) error {
-	return s.termCache.Set(term)
+	if s.GetTerm() == term {
+		return nil
+	} else if term.IsUpdated() {
+		o := icobject.New(TypeTerm, term)
+		return s.termDB.Set(o)
+	}
+	return nil
 }
 
 func (s *State) SetRewardCalcInfo(rc *RewardCalcInfo) error {
