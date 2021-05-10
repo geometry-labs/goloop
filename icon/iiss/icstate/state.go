@@ -25,18 +25,6 @@ import (
 	"github.com/icon-project/goloop/icon/iiss/iccache"
 	"github.com/icon-project/goloop/icon/iiss/icobject"
 	"github.com/icon-project/goloop/module"
-	"github.com/icon-project/goloop/service/scoredb"
-)
-
-var (
-	IssueKey          = containerdb.ToKey(containerdb.HashBuilder, "issue_icx").Build()
-	RewardCalcInfoKey = containerdb.ToKey(containerdb.HashBuilder, "reward_calc_info").Build()
-	LastValidatorsKey = containerdb.ToKey(
-		containerdb.HashBuilder, scoredb.ArrayDBPrefix, "last_validators",
-	)
-	UnstakeSlotMaxKey = containerdb.ToKey(
-		containerdb.HashBuilder, scoredb.VarDBPrefix, "unstake_slot_max",
-	)
 )
 
 type State struct {
@@ -237,7 +225,7 @@ func (s *State) GetRewardCalcInfo() (*RewardCalcInfo, error) {
 
 func (s *State) SetLastValidators(al []module.Address) error {
 	var err error
-	db := containerdb.NewArrayDB(s.store, LastValidatorsKey)
+	db := containerdb.NewArrayDB(s.store, LastValidatorsPrefix)
 	size := db.Size()
 	for i, a := range al {
 		value := a.Bytes()
@@ -254,7 +242,7 @@ func (s *State) SetLastValidators(al []module.Address) error {
 }
 
 func (s *State) GetLastValidators() []module.Address {
-	db := containerdb.NewArrayDB(s.store, LastValidatorsKey)
+	db := containerdb.NewArrayDB(s.store, LastValidatorsPrefix)
 	size := db.Size()
 	al := make([]module.Address, size, size)
 	for i := 0; i < size; i += 1 {
@@ -264,12 +252,12 @@ func (s *State) GetLastValidators() []module.Address {
 }
 
 func (s *State) SetUnstakeSlotMax(v int64) error {
-	db := containerdb.NewVarDB(s.store, UnstakeSlotMaxKey)
+	db := containerdb.NewVarDB(s.store, UnstakeSlotMaxPrefix)
 	err := db.Set(v)
 	return err
 }
 
 func (s *State) GetUnstakeSlotMax() int64 {
-	db := containerdb.NewVarDB(s.store, UnstakeSlotMaxKey)
+	db := containerdb.NewVarDB(s.store, UnstakeSlotMaxPrefix)
 	return db.Int64()
 }

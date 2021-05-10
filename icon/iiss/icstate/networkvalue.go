@@ -17,31 +17,10 @@
 package icstate
 
 import (
-	"github.com/icon-project/goloop/service/scoredb"
 	"math/big"
 
 	"github.com/icon-project/goloop/common/containerdb"
 	"github.com/icon-project/goloop/common/errors"
-)
-
-const (
-	VarIRep                                  = "irep"
-	VarRRep                                  = "rrep"
-	VarMainPRepCount                         = "main_prep_count"
-	VarSubPRepCount                          = "sub_prep_count"
-	VarTotalStake                            = "total_stake"
-	VarIISSVersion                           = "iiss_version"
-	VarTermPeriod                            = "term_period"
-	VarBondRequirement                       = "bond_requirement"
-	VarUnbondingPeriodMultiplier             = "unbonding_period_multiplier"
-	VarLockMinMultiplier                     = "lockMinMultiplier"
-	VarLockMaxMultiplier                     = "lockMaxMultiplier"
-	VarRewardFund                            = "reward_fund"
-	VarUnbondingMax                          = "unbonding_max"
-	VarValidationPenaltyCondition            = "validation_penalty_condition"
-	VarConsistentValidationPenaltyCondition  = "consistent_validation_penalty_condition"
-	VarConsistentValidationPenaltyMask       = "consistent_validation_penalty_mask"
-	VarConsistentValidationPenaltySlashRatio = "consistent_validation_penalty_slashRatio"
 )
 
 const (
@@ -50,17 +29,11 @@ const (
 )
 
 func getValue(store containerdb.ObjectStoreState, key string) containerdb.Value {
-	return containerdb.NewVarDB(
-		store,
-		containerdb.ToKey(containerdb.HashBuilder, scoredb.VarDBPrefix, key),
-	)
+	return containerdb.NewVarDB(store, Schema(2, key))
 }
 
 func setValue(store containerdb.ObjectStoreState, key string, value interface{}) error {
-	db := containerdb.NewVarDB(
-		store,
-		containerdb.ToKey(containerdb.HashBuilder, scoredb.VarDBPrefix, key),
-	)
+	db := containerdb.NewVarDB(store, Schema(2, key))
 	if err := db.Set(value); err != nil {
 		return err
 	}

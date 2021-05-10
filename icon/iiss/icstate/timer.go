@@ -19,18 +19,9 @@ package icstate
 import (
 	"github.com/icon-project/goloop/common"
 	"github.com/icon-project/goloop/common/codec"
-	"github.com/icon-project/goloop/common/containerdb"
 	"github.com/icon-project/goloop/common/errors"
 	"github.com/icon-project/goloop/icon/iiss/icobject"
 	"github.com/icon-project/goloop/module"
-	"github.com/icon-project/goloop/service/scoredb"
-)
-
-var unstakingTimerDictPrefix = containerdb.ToKey(
-	containerdb.HashBuilder, scoredb.DictDBPrefix, "timer_unstaking",
-)
-var unbondingTimerDictPrefix = containerdb.ToKey(
-	containerdb.HashBuilder, scoredb.DictDBPrefix, "timer_unbonding",
 )
 
 type addresses []*common.Address

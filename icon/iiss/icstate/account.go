@@ -23,22 +23,14 @@ import (
 
 	"github.com/icon-project/goloop/common"
 	"github.com/icon-project/goloop/common/codec"
-	"github.com/icon-project/goloop/common/containerdb"
 	"github.com/icon-project/goloop/common/errors"
 	"github.com/icon-project/goloop/icon/iiss/icobject"
 	"github.com/icon-project/goloop/module"
-	"github.com/icon-project/goloop/service/scoredb"
 )
 
 const (
 	accountVersion1 = iota + 1
 	accountVersion  = accountVersion1
-)
-
-var AccountDictPrefix = containerdb.ToKey(
-	containerdb.HashBuilder,
-	scoredb.DictDBPrefix,
-	"account_db",
 )
 
 // Account containing IISS information
