@@ -86,7 +86,7 @@ func ToPRepStatus(object trie.Object) *PRepStatus {
 		return nil
 	}
 	ps := object.(*icobject.Object).Real().(*PRepStatus)
-	ps = ps.Clone()
+	ps.freeze()
 	return ps
 }
 

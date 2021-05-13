@@ -275,11 +275,13 @@ func (p *PRepBase) SetPRep(name, email, website, country, city, details, endpoin
 }
 
 func (p *PRepBase) SetIrep(irep *big.Int, irepHeight int64) {
+	p.checkWritable()
 	p.irep = irep
 	p.irepHeight = irepHeight
 }
 
 func (p *PRepBase) SetBonderList(bonderList BonderList) {
+	p.checkWritable()
 	p.bonderList = bonderList
 }
 
