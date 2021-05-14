@@ -197,10 +197,14 @@ type PRepManager struct {
 
 func (pm *PRepManager) init() {
 	size := pm.state.GetActivePRepSize()
+	mode := icstate.ModeWrite
+	if pm.state.IsReadonly() {
+		mode = icstate.ModeRead
+	}
 
 	for i := 0; i < size; i++ {
 		owner := pm.state.GetActivePRep(i)
-		prep := pm.getPRepFromState(owner)
+		prep := pm.getPRepFromState(owner, mode)
 		if prep == nil {
 			pm.logger.Warnf("Failed to load PRep: %s", owner)
 		} else {
@@ -226,8 +230,8 @@ func (pm *PRepManager) getBondRequirement() int64 {
 	return pm.state.GetBondRequirement()
 }
 
-func (pm *PRepManager) getPRepFromState(owner module.Address) *PRep {
-	pb := pm.state.GetPRepBase(owner, false)
+func (pm *PRepManager) getPRepFromState(owner module.Address, mode icstate.CacheMode) *PRep {
+	pb := pm.state.GetPRepBase(owner, mode)
 	if pb == nil {
 		return nil
 	}
@@ -469,7 +473,7 @@ func (pm *PRepManager) RegisterPRep(regInfo *RegInfo, irep *big.Int) error {
 		return errors.Errorf("Already in use: addr=%s status=%s", owner, ps.Status())
 	}
 
-	pb := pm.state.GetPRepBase(owner, true)
+	pb := pm.state.GetPRepBase(owner, icstate.ModeCreateIfNotExist)
 	err := setPRep(pb, regInfo)
 	if err != nil {
 		return err
@@ -497,7 +501,7 @@ func (pm *PRepManager) RegisterPRep(regInfo *RegInfo, irep *big.Int) error {
 func (pm *PRepManager) SetPRep(regInfo *RegInfo) error {
 	owner := regInfo.owner
 
-	pb := pm.state.GetPRepBase(owner, false)
+	pb := pm.state.GetPRepBase(owner, icstate.ModeWrite)
 	if pb == nil {
 		return errors.Errorf("PRep not found: %s", owner)
 	}
@@ -722,7 +726,7 @@ func (pm *PRepManager) UpdateBlockVoteStats(owner module.Address, voted bool, bl
 	return err
 }
 
-// Grade change, LastState to icstate.None
+// ImposePenalty changes Grade and set icstate.None to LastState
 func (pm *PRepManager) ImposePenalty(owner module.Address, blockHeight int64) error {
 	var err error
 	prep := pm.GetPRepByOwner(owner)

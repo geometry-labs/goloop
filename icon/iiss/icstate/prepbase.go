@@ -39,9 +39,6 @@ type PRepBase struct {
 	icobject.NoDatabase
 	StateAndSnapshot
 
-	// memory variables
-	readonly bool
-
 	// database variables
 	name        string
 	country     string
@@ -132,7 +129,6 @@ func (p *PRepBase) Set(other *PRepBase) {
 
 func (p *PRepBase) Clone() *PRepBase {
 	return &PRepBase{
-		readonly:    false,
 		name:        p.name,
 		city:        p.city,
 		country:     p.country,
@@ -210,10 +206,6 @@ func (p *PRepBase) RLPDecodeFields(d codec.Decoder) error {
 	}
 	p.node = node
 	return nil
-}
-
-func (p *PRepBase) freeze() {
-	p.readonly = true
 }
 
 func (p *PRepBase) Version() int {

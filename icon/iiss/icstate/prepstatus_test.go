@@ -47,7 +47,7 @@ func TestPRepStatus_Bytes(t *testing.T) {
 	ss2 := ToPRepStatus(o2)
 	assert.Equal(t, true, ss1.Equal(ss2))
 	assert.Equal(t, true, ss2.Equal(ss1))
-	assert.Equal(t, false, ss2.readonly)
+	assert.Equal(t, true, ss2.IsReadonly())
 }
 
 // test for GetBondedDelegation

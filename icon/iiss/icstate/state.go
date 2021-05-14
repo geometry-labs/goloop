@@ -51,6 +51,10 @@ type State struct {
 	store               *icobject.ObjectStoreState
 }
 
+func (s *State) IsReadonly() bool {
+	return s.readonly
+}
+
 func (s *State) Reset(ss *Snapshot) error {
 	var err error
 	s.store.Reset(ss.store.ImmutableForObject)
@@ -120,8 +124,8 @@ func (s *State) GetActivePRep(i int) module.Address {
 	s.prepBaseCache.Add(base)
 }*/
 
-func (s *State) GetPRepBase(owner module.Address, createIfNotExist bool) *PRepBase {
-	return s.prepBaseCache.Get(owner, createIfNotExist)
+func (s *State) GetPRepBase(owner module.Address, mode CacheMode) *PRepBase {
+	return s.prepBaseCache.Get(owner, mode)
 }
 
 func (s *State) GetPRepStatus(owner module.Address, createIfNotExist bool) *PRepStatus {
@@ -144,7 +148,7 @@ func NewStateFromTrie(t trie.MutableForObject, readonly bool) *State {
 		accountCache:        newAccountCache(store),
 		activePRepCache:     newActivePRepCache(store),
 		nodeOwnerCache:      newNodeOwnerCache(store),
-		prepBaseCache:       newPRepBaseCache(store),
+		prepBaseCache:       NewPRepBaseCache(store, readonly),
 		prepStatusCache:     newPRepStatusCache(store),
 		unstakingTimerCache: newTimerCache(store, unstakingTimerDictPrefix),
 		unbondingTimerCache: newTimerCache(store, unbondingTimerDictPrefix),

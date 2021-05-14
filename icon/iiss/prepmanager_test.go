@@ -122,7 +122,7 @@ func createDelegations(start, size int) ([]*icstate.Delegation, int64) {
 }
 
 func createActivePRep(s *icstate.State, addr module.Address, bonded, delegated int64) {
-	s.GetPRepBase(addr, true)
+	s.GetPRepBase(addr, icstate.ModeCreateIfNotExist)
 	ps := s.GetPRepStatus(addr, true)
 	ps.SetStatus(icstate.Active)
 	ps.SetBonded(big.NewInt(bonded))
@@ -207,7 +207,7 @@ func TestPRepManager_RegisterPRep(t *testing.T) {
 		assert.Equal(t, 0, BigIntInitialIRep.Cmp(prep.IRep()))
 		assert.True(t, compareRegInfo(prep, regInfo))
 
-		pb := pm.state.GetPRepBase(owner, false)
+		pb := pm.state.GetPRepBase(owner, icstate.ModeWrite)
 		assert.True(t, pb == prep.PRepBase)
 		ps := pm.state.GetPRepStatus(owner, false)
 		assert.True(t, ps == prep.PRepStatus)

@@ -25,30 +25,47 @@ var (
 )
 
 type PRepBaseCache struct {
-	bases map[string]*PRepBase
-	dict  *containerdb.DictDB
+	readonly bool
+	bases    map[string]*PRepBase
+	dict     *containerdb.DictDB
 }
 
-func (c *PRepBaseCache) Get(owner module.Address, createIfNotExist bool) *PRepBase {
+type CacheMode int
+const (
+	ModeRead CacheMode = iota
+	ModeWrite
+	ModeCreateIfNotExist
+)
+
+func (c *PRepBaseCache) Get(owner module.Address, mode CacheMode) *PRepBase {
+	if c.readonly && mode != ModeRead {
+		panic(
+			errors.Errorf("PRepBaseCache is readonly: owner=%v flag=%v", owner, mode))
+	}
+
 	key := icutils.ToKey(owner)
-	base := c.bases[key]
-	if base != nil {
-		return base
-	}
-	o := c.dict.Get(owner)
-	if o == nil {
-		if createIfNotExist {
-			base = NewPRepBase()
-			c.bases[key] = base
+	base, cached := c.bases[key]
+	if !cached {
+		o := c.dict.Get(owner)
+		if o == nil {
+			if mode == ModeCreateIfNotExist {
+				base = NewPRepBase()
+			}
 		} else {
-			// return nil
+			base = ToPRepBase(o.Object())
 		}
-	} else {
-		base = ToPRepBase(o.Object())
-		if base != nil {
+	}
+
+	if base != nil {
+		if base.IsReadonly() && mode != ModeRead {
+			base = base.Clone()
+			cached = false
+		}
+		if !cached {
 			c.bases[key] = base
 		}
 	}
+
 	return base
 }
 
@@ -57,19 +74,7 @@ func (c *PRepBaseCache) Clear() {
 }
 
 func (c *PRepBaseCache) Reset() {
-	for key, base := range c.bases {
-		addr, err := common.NewAddress([]byte(key))
-		if err != nil {
-			panic(errors.Errorf("Address convert error"))
-		}
-		value := c.dict.Get(addr)
-
-		if value == nil {
-			delete(c.bases, key)
-		} else {
-			base.Set(ToPRepBase(value.Object()))
-		}
-	}
+	c.Clear()
 }
 
 func (c *PRepBaseCache) Flush() {
@@ -78,6 +83,9 @@ func (c *PRepBaseCache) Flush() {
 		if err != nil {
 			panic(errors.Errorf("PRepBaseCache is broken: %s", k))
 		}
+		if base.IsReadonly() {
+			continue
+		}
 
 		if base.IsEmpty() {
 			if err = c.dict.Delete(key); err != nil {
@@ -85,18 +93,20 @@ func (c *PRepBaseCache) Flush() {
 			}
 			delete(c.bases, k)
 		} else {
-			o := icobject.New(TypePRepBase, base.Clone())
-			if err := c.dict.Set(key, o); err != nil {
+			base.freeze()
+			o := icobject.New(TypePRepBase, base)
+			if err = c.dict.Set(key, o); err != nil {
 				log.Errorf("Failed to set snapshotMap for %x, err+%+v", key, err)
 			}
 		}
 	}
 }
 
-func newPRepBaseCache(store containerdb.ObjectStoreState) *PRepBaseCache {
+func NewPRepBaseCache(store containerdb.ObjectStoreState, readonly bool) *PRepBaseCache {
 	return &PRepBaseCache{
-		bases: make(map[string]*PRepBase),
-		dict:  containerdb.NewDictDB(store, 1, prepBaseDictPrefix),
+		readonly: readonly,
+		bases:    make(map[string]*PRepBase),
+		dict:     containerdb.NewDictDB(store, 1, prepBaseDictPrefix),
 	}
 }
 

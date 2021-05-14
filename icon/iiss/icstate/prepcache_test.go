@@ -3,11 +3,12 @@ package icstate
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/icon-project/goloop/common"
 	"github.com/icon-project/goloop/common/db"
 	"github.com/icon-project/goloop/icon/iiss/icobject"
 	"github.com/icon-project/goloop/icon/iiss/icutils"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestPrepBaseCache(t *testing.T) {
@@ -17,14 +18,14 @@ func TestPrepBaseCache(t *testing.T) {
 	addr := common.MustNewAddressFromString("hx1")
 
 	// cache added
-	base := s.prepBaseCache.Get(addr, false)
+	base := s.prepBaseCache.Get(addr, ModeWrite)
 	assert.Nil(t, base)
-	base = s.prepBaseCache.Get(addr, true)
+	base = s.prepBaseCache.Get(addr, ModeCreateIfNotExist)
 
 	addr = common.MustNewAddressFromString("hx2")
 
 	// cache added
-	base = s.prepBaseCache.Get(addr, true)
+	base = s.prepBaseCache.Get(addr, ModeCreateIfNotExist)
 	base.SetPRep("name", "emal", "web", "country", "city", "deatil", "end", addr)
 
 	key := icutils.ToKey(addr)
@@ -39,17 +40,17 @@ func TestPrepBaseCache(t *testing.T) {
 	assert.NotNil(t, val)
 
 	// Reset() reverts Clear(), should get after reset()
-	base = s.prepBaseCache.Get(addr, true)
+	base = s.prepBaseCache.Get(addr, ModeCreateIfNotExist)
 	base.Clear()
 
 	s.prepBaseCache.Reset()
-	base = s.prepBaseCache.Get(addr, true)
+	base = s.prepBaseCache.Get(addr, ModeCreateIfNotExist)
 	assert.False(t, base.IsEmpty())
 	assert.Equal(t, "name", base.name)
 
 	// item is removed in the map,
 	// after it flush to DB, it is removed in DB
-	base = s.prepBaseCache.Get(addr, true)
+	base = s.prepBaseCache.Get(addr, ModeCreateIfNotExist)
 	base.Clear()
 	s.prepBaseCache.Flush()
 	key = icutils.ToKey(addr)
@@ -64,7 +65,7 @@ func TestPrepBaseCache(t *testing.T) {
 
 	// but it can get item, using Get() specifically
 	addr = common.MustNewAddressFromString("hx1")
-	base = s.prepBaseCache.Get(addr, true)
+	base = s.prepBaseCache.Get(addr, ModeCreateIfNotExist)
 
 	assert.Equal(t, 1, len(s.prepBaseCache.bases))
 }

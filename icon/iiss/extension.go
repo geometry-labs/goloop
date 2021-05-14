@@ -572,12 +572,12 @@ func (s *ExtensionStateImpl) SetPRep(regInfo *RegInfo) error {
 		}
 	}
 
-	prepInfo := s.State.GetPRepBase(owner, false)
-	if prepInfo == nil {
+	pb := s.State.GetPRepBase(owner, icstate.ModeRead)
+	if pb == nil {
 		return errors.Errorf("PRep Not Found: %v", owner)
 	}
 
-	regInfo.UpdateRegInfo(prepInfo)
+	regInfo.UpdateRegInfo(pb)
 
 	return s.pm.SetPRep(regInfo)
 }
@@ -665,7 +665,7 @@ func (s *ExtensionStateImpl) AddEventBond(blockHeight int64, from module.Address
 func (s *ExtensionStateImpl) SetBonderList(from module.Address, bl icstate.BonderList) error {
 	s.logger.Tracef("SetBonderList() start: from=%s bl=%s", from, bl)
 
-	pb := s.State.GetPRepBase(from, false)
+	pb := s.State.GetPRepBase(from, icstate.ModeWrite)
 	if pb == nil {
 		return scoreresult.InvalidParameterError.Errorf("PRep not found: %v", from)
 	}
@@ -687,7 +687,7 @@ func (s *ExtensionStateImpl) SetBonderList(from module.Address, bl icstate.Bonde
 }
 
 func (s *ExtensionStateImpl) GetBonderList(address module.Address) (map[string]interface{}, error) {
-	pb := s.State.GetPRepBase(address, false)
+	pb := s.State.GetPRepBase(address, icstate.ModeRead)
 	if pb == nil {
 		return nil, errors.Errorf("PRep not found: %v", address)
 	}
@@ -697,7 +697,7 @@ func (s *ExtensionStateImpl) GetBonderList(address module.Address) (map[string]i
 }
 
 func (s *ExtensionStateImpl) SetGovernanceVariables(from module.Address, irep *big.Int, blockHeight int64) error {
-	pb := s.State.GetPRepBase(from, false)
+	pb := s.State.GetPRepBase(from, icstate.ModeWrite)
 	if pb == nil {
 		return errors.Errorf("PRep not found: %v", from)
 	}
