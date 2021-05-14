@@ -95,7 +95,7 @@ func ToPRepBase(object trie.Object) *PRepBase {
 		return nil
 	}
 	pb := object.(*icobject.Object).Real().(*PRepBase)
-	pb = pb.Clone()
+	pb.freeze()
 	return pb
 }
 
