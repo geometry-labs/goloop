@@ -147,14 +147,14 @@ func (p *PRepBase) Clone() *PRepBase {
 	}
 }
 
-func (p *PRepBase) GetSnapshot() *PRepBase {
-	if p.IsReadonly() {
-		return p
-	}
-	ret := p.Clone()
-	ret.freeze()
-	return ret
-}
+//func (p *PRepBase) GetSnapshot() *PRepBase {
+//	if p.IsReadonly() {
+//		return p
+//	}
+//	ret := p.Clone()
+//	ret.freeze()
+//	return ret
+//}
 
 func (p *PRepBase) ToJSON() map[string]interface{} {
 	jso := make(map[string]interface{})

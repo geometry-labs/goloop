@@ -377,14 +377,14 @@ func (ps *PRepStatus) Clear() {
 	ps.lastHeight = 0
 }
 
-func (ps *PRepStatus) GetSnapshot() *PRepStatus {
-	if ps.IsReadonly() {
-		return ps
-	}
-	ret := ps.Clone()
-	ret.freeze()
-	return ret
-}
+//func (ps *PRepStatus) GetSnapshot() *PRepStatus {
+//	if ps.IsReadonly() {
+//		return ps
+//	}
+//	ret := ps.Clone()
+//	ret.freeze()
+//	return ret
+//}
 
 func (ps *PRepStatus) IsEmpty() bool {
 	return ps.grade == Candidate &&
