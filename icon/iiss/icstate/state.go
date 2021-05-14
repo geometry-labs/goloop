@@ -128,8 +128,8 @@ func (s *State) GetPRepBase(owner module.Address, mode CacheMode) *PRepBase {
 	return s.prepBaseCache.Get(owner, mode)
 }
 
-func (s *State) GetPRepStatus(owner module.Address, createIfNotExist bool) *PRepStatus {
-	return s.prepStatusCache.Get(owner, createIfNotExist)
+func (s *State) GetPRepStatus(owner module.Address, mode CacheMode) *PRepStatus {
+	return s.prepStatusCache.Get(owner, mode)
 }
 
 func NewStateFromSnapshot(ss *Snapshot, readonly bool) *State {
@@ -149,7 +149,7 @@ func NewStateFromTrie(t trie.MutableForObject, readonly bool) *State {
 		activePRepCache:     newActivePRepCache(store),
 		nodeOwnerCache:      newNodeOwnerCache(store),
 		prepBaseCache:       NewPRepBaseCache(store, readonly),
-		prepStatusCache:     newPRepStatusCache(store),
+		prepStatusCache:     NewPRepStatusCache(store, readonly),
 		unstakingTimerCache: newTimerCache(store, unstakingTimerDictPrefix),
 		unbondingTimerCache: newTimerCache(store, unbondingTimerDictPrefix),
 		termCache:           newTermCache(store),

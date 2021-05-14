@@ -31,6 +31,7 @@ type PRepBaseCache struct {
 }
 
 type CacheMode int
+
 const (
 	ModeRead CacheMode = iota
 	ModeWrite
@@ -83,9 +84,6 @@ func (c *PRepBaseCache) Flush() {
 		if err != nil {
 			panic(errors.Errorf("PRepBaseCache is broken: %s", k))
 		}
-		if base.IsReadonly() {
-			continue
-		}
 
 		if base.IsEmpty() {
 			if err = c.dict.Delete(key); err != nil {
@@ -111,30 +109,39 @@ func NewPRepBaseCache(store containerdb.ObjectStoreState, readonly bool) *PRepBa
 }
 
 type PRepStatusCache struct {
+	readonly bool
 	statuses map[string]*PRepStatus
 	dict     *containerdb.DictDB
 }
 
-func (c *PRepStatusCache) Get(owner module.Address, createIfNotExist bool) *PRepStatus {
+func (c *PRepStatusCache) Get(owner module.Address, mode CacheMode) *PRepStatus {
+	if c.readonly && mode != ModeRead {
+		panic(errors.Errorf("PRepBaseCache is readonly: owner=%v flag=%v", owner, mode))
+	}
+
 	key := icutils.ToKey(owner)
-	status := c.statuses[key]
-	if status != nil {
-		return status
-	}
-	o := c.dict.Get(owner)
-	if o == nil {
-		if createIfNotExist {
-			status = NewPRepStatus()
-			c.statuses[key] = status
+	status, cached := c.statuses[key]
+	if !cached {
+		o := c.dict.Get(owner)
+		if o == nil {
+			if mode == ModeCreateIfNotExist {
+				status = NewPRepStatus()
+			}
 		} else {
-			// return nil
+			status = ToPRepStatus(o.Object())
 		}
-	} else {
-		status = ToPRepStatus(o.Object())
-		if status != nil {
+	}
+
+	if status != nil {
+		if status.IsReadonly() && mode != ModeRead {
+			status = status.Clone()
+			cached = false
+		}
+		if !cached {
 			c.statuses[key] = status
 		}
 	}
+
 	return status
 }
 
@@ -143,19 +150,7 @@ func (c *PRepStatusCache) Clear() {
 }
 
 func (c *PRepStatusCache) Reset() {
-	for key, status := range c.statuses {
-		addr, err := common.NewAddress([]byte(key))
-		if err != nil {
-			panic(errors.Errorf("Address convert error"))
-		}
-		value := c.dict.Get(addr)
-
-		if value == nil {
-			delete(c.statuses, key)
-		} else {
-			status.Set(ToPRepStatus(value.Object()))
-		}
-	}
+	c.Clear()
 }
 
 func (c *PRepStatusCache) Flush() {
@@ -171,16 +166,18 @@ func (c *PRepStatusCache) Flush() {
 			}
 			delete(c.statuses, k)
 		} else {
-			o := icobject.New(TypePRepStatus, status.Clone())
-			if err := c.dict.Set(key, o); err != nil {
+			status.freeze()
+			o := icobject.New(TypePRepStatus, status)
+			if err = c.dict.Set(key, o); err != nil {
 				log.Errorf("Failed to set snapshotMap for %x, err+%+v", key, err)
 			}
 		}
 	}
 }
 
-func newPRepStatusCache(store containerdb.ObjectStoreState) *PRepStatusCache {
+func NewPRepStatusCache(store containerdb.ObjectStoreState, readonly bool) *PRepStatusCache {
 	return &PRepStatusCache{
+		readonly: readonly,
 		statuses: make(map[string]*PRepStatus),
 		dict:     containerdb.NewDictDB(store, 1, prepStatusDictPrefix),
 	}

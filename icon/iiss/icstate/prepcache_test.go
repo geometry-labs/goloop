@@ -77,12 +77,12 @@ func TestPrepStatusCache(t *testing.T) {
 	addr := common.MustNewAddressFromString("hx1")
 
 	// cache added
-	status := s.prepStatusCache.Get(addr, false)
+	status := s.prepStatusCache.Get(addr, ModeWrite)
 	assert.Nil(t, status)
-	status = s.prepStatusCache.Get(addr, true)
+	status = s.prepStatusCache.Get(addr, ModeCreateIfNotExist)
 
 	addr = common.MustNewAddressFromString("hx2")
-	status = s.prepStatusCache.Get(addr, true)
+	status = s.prepStatusCache.Get(addr, ModeCreateIfNotExist)
 	status.SetVTotal(100)
 
 	// cache added
@@ -98,16 +98,16 @@ func TestPrepStatusCache(t *testing.T) {
 	assert.NotNil(t, val)
 
 	// Reset() reverts Clear(), should get after reset()
-	status = s.prepStatusCache.Get(addr, true)
+	status = s.prepStatusCache.Get(addr, ModeCreateIfNotExist)
 	status.Clear()
 	s.prepStatusCache.Reset()
-	status = s.prepStatusCache.Get(addr, true)
+	status = s.prepStatusCache.Get(addr, ModeCreateIfNotExist)
 	assert.False(t, status.IsEmpty())
 	assert.Equal(t, int64(100), status.vTotal)
 
 	// item is removed in the map,
 	// after it flush to DB, it is removed in DB
-	status = s.prepStatusCache.Get(addr, true)
+	status = s.prepStatusCache.Get(addr, ModeCreateIfNotExist)
 	status.Clear()
 	s.prepStatusCache.Flush()
 	key = icutils.ToKey(addr)
@@ -122,7 +122,7 @@ func TestPrepStatusCache(t *testing.T) {
 
 	// but it can get item, using Get() specifically
 	addr = common.MustNewAddressFromString("hx1")
-	status = s.prepStatusCache.Get(addr, true)
+	status = s.prepStatusCache.Get(addr, ModeCreateIfNotExist)
 
 	assert.Equal(t, 1, len(s.prepStatusCache.statuses))
 }

@@ -236,7 +236,7 @@ func (pm *PRepManager) getPRepFromState(owner module.Address, mode icstate.Cache
 		return nil
 	}
 
-	ps := pm.state.GetPRepStatus(owner, false)
+	ps := pm.state.GetPRepStatus(owner, mode)
 	if ps == nil {
 		panic(errors.Errorf("PRepStatus not found: %s", owner))
 	}
@@ -468,7 +468,7 @@ func (pm *PRepManager) RegisterPRep(regInfo *RegInfo, irep *big.Int) error {
 	if pm.contains(owner) {
 		return errors.Errorf("PRep already exists: %s", owner)
 	}
-	ps := pm.state.GetPRepStatus(owner, false)
+	ps := pm.state.GetPRepStatus(owner, icstate.ModeWrite)
 	if ps != nil && ps.Status() != icstate.NotReady {
 		return errors.Errorf("Already in use: addr=%s status=%s", owner, ps.Status())
 	}
@@ -481,7 +481,7 @@ func (pm *PRepManager) RegisterPRep(regInfo *RegInfo, irep *big.Int) error {
 	pb.SetIrep(irep, 0)
 
 	if ps == nil {
-		ps = pm.state.GetPRepStatus(owner, true)
+		ps = pm.state.GetPRepStatus(owner, icstate.ModeCreateIfNotExist)
 	}
 	ps.SetStatus(icstate.Active)
 
@@ -603,7 +603,7 @@ func (pm *PRepManager) ChangeDelegation(od, nd icstate.Delegations) (map[string]
 			return nil, err
 		}
 		if value.Sign() != 0 {
-			ps := pm.state.GetPRepStatus(owner, true)
+			ps := pm.state.GetPRepStatus(owner, icstate.ModeCreateIfNotExist)
 			ps.SetDelegated(new(big.Int).Add(ps.Delegated(), value))
 			if !ps.IsActive() {
 				delegatedToInactiveNode.Add(delegatedToInactiveNode, value)
@@ -645,7 +645,7 @@ func (pm *PRepManager) ChangeBond(oBonds, nBonds icstate.Bonds) (map[string]*big
 		}
 
 		if value.Sign() != 0 {
-			ps := pm.state.GetPRepStatus(owner, false)
+			ps := pm.state.GetPRepStatus(owner, icstate.ModeWrite)
 			if ps == nil {
 				return nil, errors.Errorf("Failed to set bonded value to PRepStatus")
 			}

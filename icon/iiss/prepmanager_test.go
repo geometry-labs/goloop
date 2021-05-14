@@ -60,7 +60,7 @@ func createPRepManager(t *testing.T, readonly bool, size int) *PRepManager {
 		assert.NoError(t, pm.RegisterPRep(newRegInfo(i), BigIntInitialIRep))
 	}
 	pm.Sort()
-	assert.NoError(t, pm.state.Flush())
+	//assert.NoError(t, pm.state.Flush())
 	assert.Equal(t, 0, pm.GetPRepSize(icstate.Main))
 	assert.Equal(t, 0, pm.GetPRepSize(icstate.Sub))
 	assert.Equal(t, size, pm.GetPRepSize(icstate.Candidate))
@@ -123,7 +123,7 @@ func createDelegations(start, size int) ([]*icstate.Delegation, int64) {
 
 func createActivePRep(s *icstate.State, addr module.Address, bonded, delegated int64) {
 	s.GetPRepBase(addr, icstate.ModeCreateIfNotExist)
-	ps := s.GetPRepStatus(addr, true)
+	ps := s.GetPRepStatus(addr, icstate.ModeCreateIfNotExist)
 	ps.SetStatus(icstate.Active)
 	ps.SetBonded(big.NewInt(bonded))
 	ps.SetDelegated(big.NewInt(delegated))
@@ -209,7 +209,7 @@ func TestPRepManager_RegisterPRep(t *testing.T) {
 
 		pb := pm.state.GetPRepBase(owner, icstate.ModeWrite)
 		assert.True(t, pb == prep.PRepBase)
-		ps := pm.state.GetPRepStatus(owner, false)
+		ps := pm.state.GetPRepStatus(owner, icstate.ModeWrite)
 		assert.True(t, ps == prep.PRepStatus)
 	}
 
@@ -276,7 +276,7 @@ func TestPRepManager_disablePRep(t *testing.T) {
 		assert.Equal(t, status, prep.Status())
 		assert.Equal(t, icstate.Candidate, prep.Grade())
 
-		ps := pm.state.GetPRepStatus(owner, false)
+		ps := pm.state.GetPRepStatus(owner, icstate.ModeWrite)
 		assert.True(t, ps == prep.PRepStatus)
 
 		assert.Equal(t, size-i-1, pm.Size())
