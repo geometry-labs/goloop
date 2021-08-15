@@ -103,7 +103,9 @@ func (p PRepSnapshots) toJSON(state *State) []interface{} {
 		ps, _ := state.GetPRepStatusByOwner(pss.Owner(), false)
 		grade := ps.Grade()
 		if ps != nil && (grade == GradeMain || grade == GradeSub) {
-			jso = append(jso, pss.ToJSON())
+			pssJson := pss.ToJSON()
+			pssJson["delegated"] = ps.Delegated()
+			jso = append(jso, pssJson)
 		}
 	}
 	return jso
