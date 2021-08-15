@@ -97,10 +97,14 @@ func (p PRepSnapshots) Clone() PRepSnapshots {
 	return ret
 }
 
-func (p PRepSnapshots) toJSON() []interface{} {
-	jso := make([]interface{}, len(p))
-	for i, pss := range p {
-		jso[i] = pss.ToJSON()
+func (p PRepSnapshots) toJSON(state *State) []interface{} {
+	jso := make([]interface{}, 0, len(p))
+	for _, pss := range p {
+		ps, _ := state.GetPRepStatusByOwner(pss.Owner(), false)
+		grade := ps.Grade()
+		if ps != nil && (grade == GradeMain || grade == GradeSub) {
+			jso = append(jso, pss.ToJSON())
+		}
 	}
 	return jso
 }
@@ -277,7 +281,7 @@ func (term *termData) clone() termData {
 	}
 }
 
-func (term *termData) ToJSON() map[string]interface{} {
+func (term *termData) ToJSON(state *State) map[string]interface{} {
 	return map[string]interface{}{
 		"sequence":              term.sequence,
 		"startBlockHeight":      term.startHeight,
@@ -294,7 +298,7 @@ func (term *termData) ToJSON() map[string]interface{} {
 		"isDecentralized":       term.isDecentralized,
 		"mainPRepCount":         term.mainPRepCount,
 		"iissVersion":           term.GetIISSVersion(),
-		"preps":                 term.prepSnapshots.toJSON(),
+		"preps":                 term.prepSnapshots.toJSON(state),
 	}
 }
 
