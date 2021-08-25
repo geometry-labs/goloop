@@ -95,7 +95,7 @@ PYEE_DIST_DIR = $(BUILD_ROOT)/build/pyee/dist
 $(PYEE_DIST_DIR):
 	@ mkdir -p $@
 
-base-image-%:
+base-image-%: builddeps-go builddeps-py builddeps-java builddeps-rocksdb
 	@ \
  	IMAGE_GO_DEPS=$(GODEPS_IMAGE) \
  	IMAGE_PY_DEPS=$(PYDEPS_IMAGE) \
