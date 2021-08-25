@@ -67,8 +67,7 @@ get_hash_of_dir() {
     ;;
     rocksdb)
         SUM=$(get_hash_of_files \
-          "${DOCKERFILE}" \
-          "${SRC_DIR}/javaee/gradle/wrapper/gradle-wrapper.properties")
+          "${DOCKERFILE}")
         HASH_OF_DIR="${ROCKSDB_VERSION}-alpine${ALPINE_VERSION}-${SUM}"
     ;;
     build)
@@ -176,15 +175,16 @@ update_image() {
             .
         local result=$?
 
-
         if [ ! -z "${EXTRA_FILES}" ] ; then
           RM_CMD="rm -rf "
+          EXTRA_FILES=($EXTRA_FILES)
           for EXTRA_FILE in "${EXTRA_FILES[@]}"; do
-              RM_CMD="${RM_CMD} ${EXTRA_FILE##}"
+              echo "EXTRA_FILE=${EXTRA_FILE} STRIP=${EXTRA_FILE##*/}"
+              RM_CMD="${RM_CMD} ${EXTRA_FILE##*/}"
           done
 
           echo ${RM_CMD}
-          #${RM_CMD}
+          ${RM_CMD}
         fi
 
         cd ${CDIR}
