@@ -41,10 +41,20 @@ build_image() {
         BUILD_DIR=${BASE_DIR}
     fi
 
+    local IMAGE_BASE=${IMAGE_BASE}
+    local LCIMPORT_DB_TYPE=${LCIMPORT_DB_TYPE}
+    if [ ! -z "${GOBUILD_TAGS}" ] && [ -z "${GOBUILD_TAGS##*rocksdb*}" ]; then
+      if [ "${IMAGE_BASE##*rocksdb*}" != "" ]; then
+        echo "invalid GOBUILD_TAGS=${GOBUILD_TAGS} IMAGE_BASE=${IMAGE_BASE}"
+        exit 1
+      fi
+      LCIMPORT_DB_TYPE=rocksdb
+    fi
+
     JAVAEE_VERSION=$(grep "^VERSION=" ${SRC_DIR}/javaee/gradle.properties | cut -d= -f2)
     BIN_DIR=${BIN_DIR:-${SRC_DIR}/bin}
     if [ "${GOBUILD_TAGS}" != "" ] ; then
-	LCIMPORT_VERSION="${LCIMPORT_VERSION}-tags(${GOBUILD_TAGS})"
+	    LCIMPORT_VERSION="${LCIMPORT_VERSION}-tags(${GOBUILD_TAGS})"
     fi
 
     # copy required files to ${BUILD_DIR}/dist
@@ -58,9 +68,11 @@ build_image() {
     cd ${BUILD_DIR}
 
     echo "Building image ${TAG}"
+    echo "IMAGE_BASE=${IMAGE_BASE} LCIMPORT_DB_TYPE=${LCIMPORT_DB_TYPE}"
     docker build \
-        --build-arg IMAGE_PY_DEPS="${IMAGE_PY_DEPS}" \
+        --build-arg IMAGE_BASE="${IMAGE_BASE}" \
         --build-arg LCIMPORT_VERSION="${LCIMPORT_VERSION}" \
+        --build-arg LCIMPORT_DB_TYPE="${LCIMPORT_DB_TYPE}" \
         --build-arg JAVAEE_VERSION="${JAVAEE_VERSION}" \
         --tag ${TAG} .
     local result=$?

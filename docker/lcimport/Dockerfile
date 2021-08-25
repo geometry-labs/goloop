@@ -1,9 +1,6 @@
-ARG IMAGE_PY_DEPS
-FROM ${IMAGE_PY_DEPS}
+ARG IMAGE_BASE
+FROM ${IMAGE_BASE}
 LABEL MAINTAINER="t_arch@iconloop.com"
-
-# install JRE
-RUN apk add --no-cache openjdk11-jre-headless
 
 ARG LCIMPORT_VERSION
 LABEL LCIMPORT_VERSION="$LCIMPORT_VERSION"
@@ -31,5 +28,9 @@ ADD icon_governance.zip /goloop/
 # container configuration
 VOLUME [ "/goloop/data" ]
 ENV LCIMPORT_DATA="/goloop/data"
+
+ARG LCIMPORT_DB_TYPE
+ENV LCIMPORT_DB_TYPE=${LCIMPORT_DB_TYPE}
+
 ENV PYEE_VERIFY_PACKAGE="true"
 CMD [ "/goloop/bin/lcimport", "executor", "run" ]

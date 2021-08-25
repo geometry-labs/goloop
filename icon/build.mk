@@ -2,7 +2,7 @@
 #  Makefile for ICON2
 #
 
-LCIMPORT_IMAGE = goloop/lcimport:$(GL_TAG)
+LCIMPORT_IMAGE = goloop/lcimport$(IMAGE_SUFFIX_DB_TYPE):$(GL_TAG)
 LCIMPORT_DOCKER_DIR = $(BUILD_ROOT)/build/lcimport
 lcimport_LDFLAGS = -X 'main.version=$(GL_VERSION)'
 
@@ -26,14 +26,14 @@ iconexec:
 	python3 setup.py bdist_wheel -d $(ICONEE_DIST_DIR) ; \
 	rm -rf iconee.egg-info
 
-lcimport-image: pyrun-iconexec gorun-lcimport-linux
+lcimport-image: pyrun-iconexec gorun-lcimport-linux base-image-py
 	@ echo "[#] Building lcimport for $(GL_VERSION)"
 	@ \
 	rm -rf $(LCIMPORT_DOCKER_DIR); \
 	BIN_DIR=$(abspath $(LINUX_BIN_DIR)) \
-	IMAGE_PY_DEPS=$(PYDEPS_IMAGE) \
-	LCIMPORT_VERSION=$(GL_VERSION) \
+	IMAGE_BASE=$(BASE_PY_IMAGE) \
 	GOBUILD_TAGS="$(GOBUILD_TAGS)" \
+	LCIMPORT_VERSION=$(GL_VERSION) \
 	$(BUILD_ROOT)/docker/lcimport/update.sh $(LCIMPORT_IMAGE) $(BUILD_ROOT) $(LCIMPORT_DOCKER_DIR)
 
 gochain-icon-image: pyrun-iconexec gorun-gochain-linux javarun-javaexec

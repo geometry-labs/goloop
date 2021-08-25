@@ -57,6 +57,17 @@ BUILD_TARGETS += goloop
 
 linux : $(addsuffix -linux,$(BUILD_TARGETS))
 
+IMAGE_SUFFIX_DB_TYPE = $(if $(patsubst *rocksdb*,,$(GOBUILD_TAGS)),-rocksdb,)
+BASE_IMAGE = goloop/base$(IMAGE_SUFFIX_DB_TYPE):$(GL_TAG)
+BASE_PY_IMAGE = goloop/base-py$(IMAGE_SUFFIX_DB_TYPE):$(GL_TAG)
+BASE_JAVA_IMAGE = goloop/base-java$(IMAGE_SUFFIX_DB_TYPE):$(GL_TAG)
+
+BUILDDEPS_IMAGE = goloop/build-deps:$(GL_TAG)
+BUILDDEPS_DOCKER_DIR = $(BUILD_ROOT)/build/builddpes
+
+ROCKSDBDEPS_IMAGE = goloop/rocksdb-deps:$(GL_TAG)
+ROCKSDBDEPS_DOCKER_DIR = $(BUILD_ROOT)/build/rocksdbdpes
+
 GODEPS_IMAGE = goloop/go-deps:$(GL_TAG)
 GODEPS_DOCKER_DIR = $(BUILD_ROOT)/build/godeps
 
@@ -84,27 +95,58 @@ PYEE_DIST_DIR = $(BUILD_ROOT)/build/pyee/dist
 $(PYEE_DIST_DIR):
 	@ mkdir -p $@
 
+base-image-%:
+	@ \
+ 	IMAGE_GO_DEPS=$(GODEPS_IMAGE) \
+ 	IMAGE_PY_DEPS=$(PYDEPS_IMAGE) \
+ 	IMAGE_JAVA_DEPS=$(JAVADEPS_IMAGE) \
+ 	IMAGE_ROCKSDB_DEPS=$(ROCKSDBDEPS_IMAGE) \
+ 	GOBUILD_TAGS="$(GOBUILD_TAGS)" \
+	$(BUILD_ROOT)/docker/base/update.sh \
+		$(patsubst base-image-%,%,$@) \
+	    goloop/base-$(patsubst base-image-%,%,$@)$(IMAGE_SUFFIX_DB_TYPE):$(GL_TAG) \
+	    $(BUILD_ROOT) $(BUILDDEPS_DOCKER_DIR)
+
+builddeps-%:
+	@ \
+ 	IMAGE_GO_DEPS=$(GODEPS_IMAGE) \
+ 	IMAGE_PY_DEPS=$(PYDEPS_IMAGE) \
+ 	IMAGE_JAVA_DEPS=$(JAVADEPS_IMAGE) \
+ 	IMAGE_ROCKSDB_DEPS=$(ROCKSDBDEPS_IMAGE) \
+	$(BUILD_ROOT)/docker/build-deps/update.sh \
+		$(patsubst builddeps-%,%,$@) \
+	    goloop/$(patsubst builddeps-%,%,$@)-deps:$(GL_TAG) \
+	    $(BUILD_ROOT) $(BUILDDEPS_DOCKER_DIR)
+
+#DEPRECATED
+rocksdbdeps-image:
+	@ \
+	$(BUILD_ROOT)/docker/rocksdb-deps/update.sh \
+	    $(ROCKSDBDEPS_IMAGE) $(BUILD_ROOT) $(ROCKSDBDEPS_DOCKER_DIR)
+
+#DEPRECATED
 godeps-image:
 	@ \
 	$(BUILD_ROOT)/docker/go-deps/update.sh \
 	    $(GODEPS_IMAGE) $(BUILD_ROOT) $(GODEPS_DOCKER_DIR)
 
-gorun-% : godeps-image
+gorun-% : builddeps-go builddeps-rocksdb builddeps-build
 	@ \
 	docker run -it --rm \
 	    -v $(BUILD_ROOT):$(GOLOOP_WORK_DIR) \
 	    -w $(GOLOOP_WORK_DIR) \
 	    -e "GOBUILD_TAGS=$(GOBUILD_TAGS)" \
 	    -e "GL_VERSION=$(GL_VERSION)" \
-	    $(GODEPS_IMAGE) \
+	    $(BUILDDEPS_IMAGE) \
 	    make $(patsubst gorun-%,%,$@)
 
+#DEPRECATED
 pydeps-image:
 	@ \
 	$(BUILD_ROOT)/docker/py-deps/update.sh \
 	    $(PYDEPS_IMAGE) $(BUILD_ROOT) $(PYDEPS_DOCKER_DIR)
 
-pyrun-% : pydeps-image | $(PYEE_DIST_DIR)
+pyrun-% : builddeps-py | $(PYEE_DIST_DIR)
 	@ \
 	docker run -it --rm \
 	    -v $(BUILD_ROOT):$(GOLOOP_WORK_DIR) \
@@ -122,12 +164,13 @@ pyexec:
 	python3 setup.py bdist_wheel -d $(PYEE_DIST_DIR) ; \
 	rm -rf pyexec.egg-info
 
+#DEPRECATED
 javadeps-image:
 	@ \
 	$(BUILD_ROOT)/docker/java-deps/update.sh \
 	    $(JAVADEPS_IMAGE) $(BUILD_ROOT) $(JAVADEPS_DOCKER_DIR)
 
-javarun-% : javadeps-image
+javarun-% : builddeps-java
 	@ \
 	docker run -it --rm \
 	    -v $(BUILD_ROOT):$(GOLOOP_WORK_DIR) \

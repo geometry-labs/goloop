@@ -818,6 +818,8 @@ func (e *Executor) Execute(from, to int64, noStored, dryRun bool) error {
 	var rps, tps, bps float32
 	tm := new(lcimporter.TPSMeasure).Init(100)
 	bm := new(lcimporter.BPSMeasure).Init(100)
+
+	start := time.Now()
 	for height := from; to < 0 || height <= to; height = height + 1 {
 		tr, err := e.ProposeTransition(prevTR, chn)
 		if err != nil {
@@ -838,6 +840,11 @@ func (e *Executor) Execute(from, to int64, noStored, dryRun bool) error {
 			tps,
 			bps,
 		)
+		if height%100 == 0 {
+			elapsed := time.Now().Sub(start)
+			e.log.Errorf("%d,%d,%d,%f,%f,%f",
+				elapsed, height, txTotal, rps, tps, bps)
+		}
 
 		// repeating execution if Reward Calculator has not finished its job.
 		for true {
