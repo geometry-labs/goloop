@@ -2,14 +2,14 @@
 #  Makefile for ICON2
 #
 
-LCIMPORT_IMAGE = goloop/lcimport$(IMAGE_SUFFIX_DB_TYPE):$(GL_TAG)
+LCIMPORT_IMAGE = jspark/goloop/lcimport$(IMAGE_SUFFIX_DB_TYPE):$(GL_TAG)
 LCIMPORT_DOCKER_DIR = $(BUILD_ROOT)/build/lcimport
 lcimport_LDFLAGS = -X 'main.version=$(GL_VERSION)'
 
-GOCHAIN_ICON_IMAGE = goloop/gochain-icon:$(GL_TAG)
+GOCHAIN_ICON_IMAGE = jspark/goloop/gochain-icon:$(GL_TAG)
 GOCHAIN_ICON_DOCKER_DIR = $(BUILD_ROOT)/build/gochain-icon
 
-GOLOOP_ICON_IMAGE = goloop-icon:$(GL_TAG)
+GOLOOP_ICON_IMAGE = jspark/goloop-icon:$(GL_TAG)
 GOLOOP_ICON_DOCKER_DIR = $(BUILD_ROOT)/build/goloop-icon
 
 ICONEE_DIST_DIR = $(BUILD_ROOT)/build/iconee/dist
@@ -36,22 +36,22 @@ lcimport-image: pyrun-iconexec gorun-lcimport-linux base-image-py
 	LCIMPORT_VERSION=$(GL_VERSION) \
 	$(BUILD_ROOT)/docker/lcimport/update.sh $(LCIMPORT_IMAGE) $(BUILD_ROOT) $(LCIMPORT_DOCKER_DIR)
 
-gochain-icon-image: pyrun-iconexec gorun-gochain-linux javarun-javaexec
+gochain-icon-image: pyrun-iconexec gorun-gochain-linux javarun-javaexec base-image-all
 	@ echo "[#] Building image $(GOCHAIN_ICON_IMAGE) for $(GL_VERSION)"
 	@ \
 	rm -rf $(GOCHAIN_ICON_DOCKER_DIR); \
 	BIN_DIR=$(abspath $(LINUX_BIN_DIR)) \
-	IMAGE_PY_DEPS=$(PYDEPS_IMAGE) \
+	IMAGE_BASE=$(BASE_IMAGE) \
 	GOCHAIN_ICON_VERSION=$(GL_VERSION) \
 	GOBUILD_TAGS="$(GOBUILD_TAGS)" \
 	$(BUILD_ROOT)/docker/gochain-icon/update.sh $(GOCHAIN_ICON_IMAGE) $(BUILD_ROOT) $(GOCHAIN_ICON_DOCKER_DIR)
 
-goloop-icon-image: pyrun-iconexec gorun-goloop-linux javarun-javaexec
+goloop-icon-image: pyrun-iconexec gorun-goloop-linux javarun-javaexec base-image-all
 	@ echo "[#] Building image $(GOLOOP_ICON_IMAGE) for $(GL_VERSION)"
 	@ \
 	rm -rf $(GOLOOP_ICON_DOCKER_DIR); \
 	BIN_DIR=$(abspath $(LINUX_BIN_DIR)) \
-	IMAGE_PY_DEPS=$(PYDEPS_IMAGE) \
+	IMAGE_BASE=$(BASE_IMAGE) \
 	GOLOOP_ICON_VERSION=$(GL_VERSION) \
 	GOBUILD_TAGS="$(GOBUILD_TAGS)" \
 	$(BUILD_ROOT)/docker/goloop-icon/update.sh $(GOLOOP_ICON_IMAGE) $(BUILD_ROOT) $(GOLOOP_ICON_DOCKER_DIR)

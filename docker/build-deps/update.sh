@@ -103,7 +103,7 @@ extra_files() {
     *)
     ;;
     esac
-    echo $EXTRA_FILES
+    echo ${EXTRA_FILES[@]}
 }
 
 update_image() {
@@ -130,6 +130,8 @@ update_image() {
     local BUILD_DIR=$4
 
     local HASH_OF_DIR=$(get_hash_of_dir ${TARGET} ${SRC_DIR})
+    # get label check from target image => if hash !=
+
     local HASH_OF_IMAGE=$(get_label_of_image ${LABEL} ${TARGET_IMAGE})
     echo "HASH_OF_DIR=${HASH_OF_DIR} HASH_OF_IMAGE=${HASH_OF_IMAGE}"
     if [ "${HASH_OF_DIR}" != "${HASH_OF_IMAGE}" ] ; then

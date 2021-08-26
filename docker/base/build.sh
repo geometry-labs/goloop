@@ -6,12 +6,9 @@ WORKDIR=$(dirname "$(readlink -f ${0})")
 cd $WORKDIR
 
 export IMAGE_PY_DEPS=${IMAGE_PY_DEPS:-goloop/py-deps:latest}
-export IMAGE_JAVA_DEPS=${IMAGE_JAVA_DEPS:-goloop/java-deps:latest}
 export IMAGE_ROCKSDB_DEPS=${IMAGE_ROCKSDB_DEPS:-goloop/rocksdb-deps:latest}
 ENGINE=${ENGINE:-all}
-if [ "${ENGINE}" != "all" ]; then
-  IMAGE_SUFFIX=-${ENGINE}
-fi
+IMAGE_SUFFIX=-${ENGINE}
 export GOBUILD_TAGS=${GOBUILD_TAGS}
 if [ ! -z "${GOBUILD_TAGS}" ] && [ -z "${GOBUILD_TAGS##*rocksdb*}" ]; then
   DB_TYPE=rocksdb

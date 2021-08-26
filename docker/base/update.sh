@@ -7,10 +7,11 @@ BASE_DIR=$(dirname $0)
 LABEL="GOLOOP_BASE_SHA"
 
 get_hash_of_dir() {
-    local SRC_DIR=$1
+    local BASE=$1
+    local SRC_DIR=$2
     local SUM=$(get_hash_of_files \
         "${SRC_DIR}/docker/base/Dockerfile")
-    echo "${BASE}-${IMAGE_PY_DEPS}-${IMAGE_JAVA_DEPS}-${IMAGE_ROCKSDB_DEPS}-${SUM}"
+    echo "${BASE}-${ALPINE_VERSION}-${IMAGE_PY_DEPS}-${IMAGE_ROCKSDB_DEPS}-${SUM}"
 }
 
 update_image() {
@@ -22,11 +23,7 @@ update_image() {
     echo "$@"
 
     local ENGINE=${1}
-    local BASE=base
-    if [ "${ENGINE}" != "all" ]; then
-      BASE=${BASE}-${ENGINE}
-    fi
-
+    local BASE=base-${ENGINE}
     if [ ! -z "${GOBUILD_TAGS}" ] && [ -z "${GOBUILD_TAGS##*rocksdb*}" ]; then
       BASE=${BASE}-rocksdb
     fi
@@ -63,11 +60,11 @@ update_image() {
         cd ${BUILD_DIR}
 
         echo "Building image ${TARGET_IMAGE}"
-        echo "IMAGE_PY_DEPS=${IMAGE_PY_DEPS}, IMAGE_JAVA_DEPS=${IMAGE_JAVA_DEPS}, IMAGE_ROCKSDB_DEPS=${IMAGE_ROCKSDB_DEPS}, BASE=${BASE}"
+        echo "ALPINE_VERSION=${ALPINE_VERSION} IMAGE_PY_DEPS=${IMAGE_PY_DEPS}, IMAGE_ROCKSDB_DEPS=${IMAGE_ROCKSDB_DEPS}, BASE=${BASE}"
         docker build \
             --build-arg ${LABEL}=${HASH_OF_DIR} \
+            --build-arg ALPINE_VERSION="${ALPINE_VERSION}" \
             --build-arg IMAGE_PY_DEPS="${IMAGE_PY_DEPS}" \
-            --build-arg IMAGE_JAVA_DEPS="${IMAGE_JAVA_DEPS}" \
             --build-arg IMAGE_ROCKSDB_DEPS="${IMAGE_ROCKSDB_DEPS}" \
             --build-arg BASE="${BASE}" \
             --tag ${TARGET_IMAGE} .
