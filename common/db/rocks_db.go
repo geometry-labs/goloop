@@ -120,6 +120,7 @@ func NewRocksDB(name string, dir string) (*RocksDB, error) {
 			}
 		}
 		if cfsLen > 0 {
+			C.rocksdb_column_family_handle_destroy(cfhs[0])
 			C.rocksdb_list_column_families_destroy(cfs, cfsLen)
 		}
 	}
@@ -142,13 +143,7 @@ func NewRocksDB(name string, dir string) (*RocksDB, error) {
 
 func (db *RocksDB) Close() error {
 	for _, bk := range db.buckets {
-		var cErr *C.char
-		C.rocksdb_drop_column_family(db.db, bk.cf, &cErr)
-		if cErr != nil {
-			err := errors.New(C.GoString(cErr))
-			C.rocksdb_free(unsafe.Pointer(cErr))
-			return err
-		}
+		C.rocksdb_column_family_handle_destroy(bk.cf)
 	}
 	C.rocksdb_close(db.db)
 	return nil
@@ -192,6 +187,9 @@ func (db *RocksDB) getValue(cf *C.rocksdb_column_family_handle_t, k []byte) ([]b
 	if cErr != nil {
 		defer C.rocksdb_free(unsafe.Pointer(cErr))
 		return nil, errors.New(C.GoString(cErr))
+	}
+	if cValue == nil {
+		return nil, nil
 	}
 	var org []byte
 	sH := (*reflect.SliceHeader)(unsafe.Pointer(&org))
