@@ -36,7 +36,7 @@ update_image() {
     fi
     local BUILD_DIR=${4}
 
-    local HASH_OF_DIR=$(get_hash_of_dir ${SRC_DIR})
+    local HASH_OF_DIR=$(get_hash_of_dir ${BASE} ${SRC_DIR})
     local HASH_OF_IMAGE=$(get_label_of_image ${LABEL} ${TARGET_IMAGE})
 
     if [ "${HASH_OF_DIR}" != "${HASH_OF_IMAGE}" ] ; then
