@@ -20,9 +20,16 @@ update_image() {
         echo "\t <engine>: all, py, java"
         return 1
     fi
-    echo "$@"
 
     local ENGINE=${1}
+    case $TARGET in
+    all);;py);;java);;
+    *)
+      echo "invalid engine ${ENGINE}"
+      return 1
+    ;;
+    esac
+
     local BASE=base-${ENGINE}
     if [ ! -z "${GOBUILD_TAGS}" ] && [ -z "${GOBUILD_TAGS##*rocksdb*}" ]; then
       BASE=${BASE}-rocksdb

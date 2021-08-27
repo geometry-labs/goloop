@@ -7,7 +7,8 @@ cd $WORKDIR
 
 export IMAGE_PY_DEPS=${IMAGE_PY_DEPS:-goloop/py-deps:latest}
 export IMAGE_ROCKSDB_DEPS=${IMAGE_ROCKSDB_DEPS:-goloop/rocksdb-deps:latest}
-ENGINE=${ENGINE:-all}
+
+ENGINE=${1}
 IMAGE_SUFFIX=-${ENGINE}
 export GOBUILD_TAGS=${GOBUILD_TAGS}
 if [ ! -z "${GOBUILD_TAGS}" ] && [ -z "${GOBUILD_TAGS##*rocksdb*}" ]; then
