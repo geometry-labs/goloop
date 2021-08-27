@@ -2,14 +2,14 @@
 #  Makefile for ICON2
 #
 
-LCIMPORT_IMAGE = jspark/goloop/lcimport$(IMAGE_SUFFIX_DB_TYPE):$(GL_TAG)
+LCIMPORT_IMAGE = goloop/lcimport$(IMAGE_SUFFIX_DB_TYPE):$(GL_TAG)
 LCIMPORT_DOCKER_DIR = $(BUILD_ROOT)/build/lcimport
 lcimport_LDFLAGS = -X 'main.version=$(GL_VERSION)'
 
-GOCHAIN_ICON_IMAGE = jspark/goloop/gochain-icon:$(GL_TAG)
+GOCHAIN_ICON_IMAGE = goloop/gochain-icon:$(GL_TAG)
 GOCHAIN_ICON_DOCKER_DIR = $(BUILD_ROOT)/build/gochain-icon
 
-GOLOOP_ICON_IMAGE = jspark/goloop-icon:$(GL_TAG)
+GOLOOP_ICON_IMAGE = goloop-icon:$(GL_TAG)
 GOLOOP_ICON_DOCKER_DIR = $(BUILD_ROOT)/build/goloop-icon
 
 ICONEE_DIST_DIR = $(BUILD_ROOT)/build/iconee/dist

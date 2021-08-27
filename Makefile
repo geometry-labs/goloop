@@ -58,27 +58,27 @@ BUILD_TARGETS += goloop
 linux : $(addsuffix -linux,$(BUILD_TARGETS))
 
 IMAGE_SUFFIX_DB_TYPE = $(if $(patsubst *rocksdb*,,$(GOBUILD_TAGS)),-rocksdb,)
-BASE_IMAGE = jspark/goloop/base-all$(IMAGE_SUFFIX_DB_TYPE):$(GL_TAG)
-BASE_PY_IMAGE = jspark/goloop/base-py$(IMAGE_SUFFIX_DB_TYPE):$(GL_TAG)
-BASE_JAVA_IMAGE = jspark/goloop/base-java$(IMAGE_SUFFIX_DB_TYPE):$(GL_TAG)
+BASE_IMAGE = goloop/base-all$(IMAGE_SUFFIX_DB_TYPE):$(GL_TAG)
+BASE_PY_IMAGE = goloop/base-py$(IMAGE_SUFFIX_DB_TYPE):$(GL_TAG)
+BASE_JAVA_IMAGE = goloop/base-java$(IMAGE_SUFFIX_DB_TYPE):$(GL_TAG)
 
-ROCKSDBDEPS_IMAGE = jspark/goloop/rocksdb-deps:$(GL_TAG)
-GODEPS_IMAGE = jspark/goloop/go-deps:$(GL_TAG)
-PYDEPS_IMAGE = jspark/goloop/py-deps:$(GL_TAG)
-JAVADEPS_IMAGE = jspark/goloop/java-deps:$(GL_TAG)
-BUILDDEPS_IMAGE = jspark/goloop/build-deps:$(GL_TAG)
+ROCKSDBDEPS_IMAGE = goloop/rocksdb-deps:$(GL_TAG)
+GODEPS_IMAGE = goloop/go-deps:$(GL_TAG)
+PYDEPS_IMAGE = goloop/py-deps:$(GL_TAG)
+JAVADEPS_IMAGE = goloop/java-deps:$(GL_TAG)
+BUILDDEPS_IMAGE = goloop/build-deps:$(GL_TAG)
 BUILDDEPS_DOCKER_DIR = $(BUILD_ROOT)/build/builddpes
 
-GOCHAIN_IMAGE = jspark/goloop/gochain:$(GL_TAG)
+GOCHAIN_IMAGE = goloop/gochain:$(GL_TAG)
 GOCHAIN_DOCKER_DIR = $(BUILD_ROOT)/build/gochain
 
-GOLOOP_IMAGE = jspark/goloop:$(GL_TAG)
+GOLOOP_IMAGE = goloop:$(GL_TAG)
 GOLOOP_DOCKER_DIR = $(BUILD_ROOT)/build/goloop
 
-GOLOOP_PY_IMAGE = jspark/goloop-py:$(GL_TAG)
+GOLOOP_PY_IMAGE = goloop-py:$(GL_TAG)
 GOLOOP_PY_DOCKER_DIR = $(BUILD_ROOT)/build/goloop-py
 
-GOLOOP_JAVA_IMAGE = jspark/goloop-java:$(GL_TAG)
+GOLOOP_JAVA_IMAGE = goloop-java:$(GL_TAG)
 GOLOOP_JAVA_DOCKER_DIR = $(BUILD_ROOT)/build/goloop-java
 
 GOLOOP_WORK_DIR = /work
@@ -95,7 +95,7 @@ builddeps-%:
  	IMAGE_ROCKSDB_DEPS=$(ROCKSDBDEPS_IMAGE) \
 	$(BUILD_ROOT)/docker/build-deps/update.sh \
 		$(patsubst builddeps-%,%,$@) \
-	    jspark/goloop/$(patsubst builddeps-%,%,$@)-deps:$(GL_TAG) \
+	    goloop/$(patsubst builddeps-%,%,$@)-deps:$(GL_TAG) \
 	    $(BUILD_ROOT) $(BUILDDEPS_DOCKER_DIR)
 
 gorun-% : builddeps-go builddeps-rocksdb builddeps-build
@@ -143,7 +143,7 @@ base-image-%: builddeps-go builddeps-py builddeps-java builddeps-rocksdb
  	GOBUILD_TAGS="$(GOBUILD_TAGS)" \
 	$(BUILD_ROOT)/docker/base/update.sh \
 		$(patsubst base-image-%,%,$@) \
-	    jspark/goloop/base-$(patsubst base-image-%,%,$@)$(IMAGE_SUFFIX_DB_TYPE):$(GL_TAG) \
+	    goloop/base-$(patsubst base-image-%,%,$@)$(IMAGE_SUFFIX_DB_TYPE):$(GL_TAG) \
 	    $(BUILD_ROOT) $(BUILDDEPS_DOCKER_DIR)
 
 goloop-image: pyrun-pyexec gorun-goloop-linux javarun-javaexec base-image-all
