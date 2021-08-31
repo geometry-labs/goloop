@@ -9,7 +9,7 @@ BIN_DIR = $(BUILD_ROOT)/bin
 LINUX_BIN_DIR = $(BUILD_ROOT)/build/linux
 
 GOBUILD = go build
-GOBUILD_TAGS ?=
+GOBUILD_TAGS ?= rocksdb
 GOBUILD_ENVS ?= $(GOBUILD_ENVS_$(shell go env GOOS))
 GOBUILD_LDFLAGS =
 GOBUILD_FLAGS = -tags "$(GOBUILD_TAGS)" -ldflags "$(GOBUILD_LDFLAGS)"

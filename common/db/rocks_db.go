@@ -1,3 +1,5 @@
+// +build rocksdb
+
 /*
  * Copyright 2021 ICON Foundation
  *
