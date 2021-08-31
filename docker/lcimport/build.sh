@@ -21,11 +21,7 @@ PRE_PWD=$(pwd)
 WORKDIR=$(dirname "$(readlink -f ${0})")
 cd $WORKDIR
 
-export GOBUILD_TAGS=${GOBUILD_TAGS}
-if [ ! -z "${GOBUILD_TAGS}" ] && [ -z "${GOBUILD_TAGS##*rocksdb*}" ]; then
-  IMAGE_SUFFIX_DB_TYPE=-rocksdb
-fi
-export IMAGE_BASE=${IMAGE_BASE:-goloop/base-py${IMAGE_SUFFIX_DB_TYPE}:latest}
+export IMAGE_BASE=${IMAGE_BASE:-goloop/base-py:latest}
 
 export LCIMPORT_VERSION=${LCIMPORT_VERSION:-$(git describe --always --tags --dirty)}
 IMAGE_LCIMPORT=${IMAGE_LCIMPORT:-goloop/lcimport:latest}

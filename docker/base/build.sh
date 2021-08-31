@@ -10,12 +10,7 @@ export IMAGE_ROCKSDB_DEPS=${IMAGE_ROCKSDB_DEPS:-goloop/rocksdb-deps:latest}
 
 ENGINE=${1}
 IMAGE_SUFFIX=-${ENGINE}
-export GOBUILD_TAGS=${GOBUILD_TAGS}
-if [ ! -z "${GOBUILD_TAGS}" ] && [ -z "${GOBUILD_TAGS##*rocksdb*}" ]; then
-  DB_TYPE=rocksdb
-  IMAGE_SUFFIX=${IMAGE_SUFFIX}-rocksdb
-fi
-IMAGE_BASE=${IMAGE_BASE:-goloop/base${IMAGE_SUFFIX}:latest}
+IMAGE_BASE=${IMAGE_BASE:-goloop/base-${ENGINE}latest}
 
 ./update.sh "${ENGINE}" "${IMAGE_BASE}" ../..
 

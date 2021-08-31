@@ -25,16 +25,6 @@ build_image() {
         BUILD_DIR=${BASE_DIR}
     fi
 
-    local IMAGE_BASE=${IMAGE_BASE}
-    local DB_TYPE=${DB_TYPE}
-    if [ ! -z "${GOBUILD_TAGS}" ] && [ -z "${GOBUILD_TAGS##*rocksdb*}" ]; then
-        if [ "${IMAGE_BASE##*rocksdb*}" != "" ]; then
-            echo "invalid GOBUILD_TAGS=${GOBUILD_TAGS} IMAGE_BASE=${IMAGE_BASE}"
-            exit 1
-        fi
-        DB_TYPE=rocksdb
-    fi
-
     BIN_DIR=${BIN_DIR:-${SRC_DIR}/bin}
     if [ "${GOBUILD_TAGS}" != "" ] ; then
         GOLOOP_VERSION="${GOLOOP_VERSION}-tags(${GOBUILD_TAGS})"

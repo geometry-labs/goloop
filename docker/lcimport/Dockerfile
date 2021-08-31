@@ -30,8 +30,6 @@ WORKDIR /goloop
 VOLUME [ "/goloop/data" ]
 
 ENV LCIMPORT_DATA="/goloop/data"
-ARG DB_TYPE
-ENV LCIMPORT_DB_TYPE=${DB_TYPE}
 
 ENV PYEE_VERIFY_PACKAGE="true"
 CMD [ "/goloop/bin/lcimport", "executor", "run" ]

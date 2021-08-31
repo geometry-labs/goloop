@@ -7,11 +7,23 @@ BASE_DIR=$(dirname $0)
 LABEL="GOLOOP_BASE_SHA"
 
 get_hash_of_dir() {
-    local BASE=$1
+    local ENGINE=$1
     local SRC_DIR=$2
     local SUM=$(get_hash_of_files \
         "${SRC_DIR}/docker/base/Dockerfile")
-    echo "${BASE}-${ALPINE_VERSION}-${IMAGE_PY_DEPS}-${IMAGE_ROCKSDB_DEPS}-${SUM}"
+    local GOLOOP_ROCKSDBDEP_SHA=$(get_label_of_image GOLOOP_ROCKSDBDEP_SHA ${IMAGE_ROCKSDB_DEPS})
+    local GOLOOP_PYDEP_SHA=$(get_label_of_image GOLOOP_PYDEP_SHA ${IMAGE_PY_DEPS})
+    case $TARGET in
+    py)
+      echo "${BASE}-${ALPINE_VERSION}-${GOLOOP_ROCKSDBDEP_SHA}-${GOLOOP_PYDEP_SHA}-${SUM}"
+    ;;
+    java)
+      echo "${BASE}-${ALPINE_VERSION}-${GOLOOP_ROCKSDBDEP_SHA}-${JAVA_VERSION}-${SUM}"
+    ;;
+    *)
+      echo "${BASE}-${ALPINE_VERSION}-${GOLOOP_ROCKSDBDEP_SHA}-${GOLOOP_PYDEP_SHA}-${JAVA_VERSION}-${SUM}"
+    ;;
+    esac
 }
 
 update_image() {
@@ -22,7 +34,7 @@ update_image() {
     fi
 
     local ENGINE=${1}
-    case $TARGET in
+    case $ENGINE in
     all);;py);;java);;
     *)
       echo "invalid engine ${ENGINE}"
@@ -31,10 +43,6 @@ update_image() {
     esac
 
     local BASE=base-${ENGINE}
-    if [ ! -z "${GOBUILD_TAGS}" ] && [ -z "${GOBUILD_TAGS##*rocksdb*}" ]; then
-      BASE=${BASE}-rocksdb
-    fi
-
     local TARGET_IMAGE=${2:-goloop/${BASE}:latest}
     local TARGET_REPO=${TARGET_IMAGE%%:*}
     local SRC_DIR=${3}
@@ -43,7 +51,7 @@ update_image() {
     fi
     local BUILD_DIR=${4}
 
-    local HASH_OF_DIR=$(get_hash_of_dir ${BASE} ${SRC_DIR})
+    local HASH_OF_DIR=$(get_hash_of_dir ${ENGINE} ${SRC_DIR})
     local HASH_OF_IMAGE=$(get_label_of_image ${LABEL} ${TARGET_IMAGE})
 
     if [ "${HASH_OF_DIR}" != "${HASH_OF_IMAGE}" ] ; then
